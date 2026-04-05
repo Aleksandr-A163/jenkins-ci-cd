@@ -13,7 +13,7 @@
       scm:
         - git:
             url: https://github.com/Aleksandr-A163/jenkins-ci-cd.git
-            credentials-id: jenkins
+            credentials-id: github
             branches:
               - $BRANCH
       script-path: pipeline/jobs_uploader.groovy

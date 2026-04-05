@@ -11,20 +11,17 @@ node {
     }
 
     stage('Create config.ini') {
-        withCredentials([usernamePassword(credentialsId: 'jenkins', usernameVariable: 'JENKINS_USER', passwordVariable: 'JENKINS_PASS')]) {
+        withCredentials([usernamePassword(credentialsId: 'jenkins_api', usernameVariable: 'JENKINS_USER', passwordVariable: 'JENKINS_PASS')]) {
             def jenkinsUrl = (env.JENKINS_URL ?: 'http://localhost:8080/').trim()
-            sh """
-            cat > ${CONF_FILE} <<EOF
-[jenkins]
-url=${jenkinsUrl}
-user=${JENKINS_USER}
-password=${JENKINS_PASS}
-
-[job_builder]
-recursive=True
-keep_descriptions=False
-EOF
-            """
+            writeFile file: CONF_FILE, text: """[jenkins]
+        url=${jenkinsUrl}
+        user=${JENKINS_USER}
+        password=${JENKINS_PASS}
+        
+        [job_builder]
+        recursive=True
+        keep_descriptions=False
+        """
         }
     }
 
