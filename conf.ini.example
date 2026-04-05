@@ -1,0 +1,8 @@
+[jenkins]
+url=http://localhost:8080/
+user=admin
+password=admin
+
+[job_builder]
+recursive=True
+keep_descriptions=False

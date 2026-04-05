@@ -1,0 +1,23 @@
+---
+- job:
+    name: mobile_tests
+    description: "Mobile tests pipeline for Gradle project mobile-appium"
+    project-type: pipeline
+    concurrent: true
+    parameters:
+      - string:
+          name: BRANCH
+          default: main
+          description: "Git branch name"
+      - string:
+          name: APK_URL
+          default: https://raw.githubusercontent.com/Aleksandr-A163/mobile-appium/main/wiremock/__files/wishlist.apk
+          description: "Raw GitHub URL to download APK"
+    pipeline-scm:
+      scm:
+        - git:
+            url: https://github.com/Aleksandr-A163/mobile-appium.git
+            credentials-id: jenkins
+            branches:
+              - $BRANCH
+      script-path: pipeline/mobile-test-pipeline.groovy

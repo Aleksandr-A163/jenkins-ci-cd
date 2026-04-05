@@ -1,0 +1,31 @@
+---
+- view:
+    name: QA
+    view-type: list
+    description: "QA mobile jobs"
+    filter-executors: true
+    filter-queue: true
+    job-name:
+      - jobs_uploader
+      - mobile_tests
+      - running_tests
+    columns:
+      - status
+      - job
+      - build-button
+      - weather
+
+- view:
+    name: Test_runner
+    view-type: list
+    description: "Mobile test runner"
+    filter-executors: true
+    filter-queue: true
+    job-name:
+      - mobile_tests
+      - running_tests
+    columns:
+      - status
+      - job
+      - build-button
+      - weather

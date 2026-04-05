@@ -1,0 +1,7 @@
+---
+- project:
+    name: mobile_gradle_project
+    jobs:
+      - jobs_uploader
+      - mobile_tests
+      - running_tests

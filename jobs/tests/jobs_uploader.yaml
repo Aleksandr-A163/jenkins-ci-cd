@@ -1,0 +1,19 @@
+---
+- job:
+    name: jobs_uploader
+    description: "Upload Jenkins jobs from this repository"
+    project-type: pipeline
+    concurrent: false
+    parameters:
+      - string:
+          name: BRANCH
+          default: main
+          description: "Git branch name"
+    pipeline-scm:
+      scm:
+        - git:
+            url: https://github.com/Aleksandr-A163/jenkins-ci-cd.git
+            credentials-id: jenkins
+            branches:
+              - $BRANCH
+      script-path: pipeline/jobs_uploader.groovy

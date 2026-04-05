@@ -1,0 +1,64 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Run selected tests') {
+            steps {
+                script {
+                    def builds = [:]
+                    def jobs = [:]
+
+                    if (params.RUN_MOBILE) {
+                        jobs['Mobile tests'] = {
+                            builds['mobile'] = build job: 'mobile_tests', wait: true
+                        }
+                    }
+
+                    if (jobs.isEmpty()) {
+                        error('No jobs selected')
+                    }
+
+                    parallel jobs
+                    env.MOBILE_BUILD = builds['mobile']?.number?.toString()
+                }
+            }
+        }
+
+        stage('Collect Allure results') {
+            steps {
+                script {
+                    if (params.RUN_MOBILE && env.MOBILE_BUILD) {
+                        copyArtifacts(
+                            projectName: 'mobile_tests',
+                            selector: specific(env.MOBILE_BUILD),
+                            filter: 'build/allure-results/**',
+                            target: 'allure/mobile'
+                        )
+                    }
+                }
+            }
+        }
+
+        stage('Merge results') {
+            steps {
+                sh '''
+                mkdir -p merged-allure-results
+                if [ -d allure ]; then
+                  find allure -type f | while read file; do
+                    cp "$file" merged-allure-results/
+                  done
+                fi
+                ls -la merged-allure-results || true
+                '''
+            }
+        }
+
+        stage('Allure report') {
+            steps {
+                allure([
+                    results: [[path: 'merged-allure-results']]
+                ])
+            }
+        }
+    }
+}

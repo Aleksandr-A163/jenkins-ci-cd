@@ -1,0 +1,75 @@
+---
+- job:
+    name: running_tests
+    description: "Run selected test jobs and publish merged Allure report"
+    project-type: pipeline
+    concurrent: true
+    parameters:
+      - bool:
+          name: RUN_MOBILE
+          default: true
+          description: "Run mobile_tests job"
+    pipeline:
+      script: |
+        pipeline {
+            agent any
+
+            stages {
+                stage('Run selected tests') {
+                    steps {
+                        script {
+                            def builds = [:]
+                            def jobs = [:]
+
+                            if (params.RUN_MOBILE) {
+                                jobs['Mobile tests'] = {
+                                    builds['mobile'] = build job: 'mobile_tests', wait: true
+                                }
+                            }
+
+                            if (jobs.isEmpty()) {
+                                error('No jobs selected')
+                            }
+
+                            parallel jobs
+                            env.MOBILE_BUILD = builds['mobile']?.number?.toString()
+                        }
+                    }
+                }
+
+                stage('Collect Allure results') {
+                    steps {
+                        script {
+                            if (params.RUN_MOBILE && env.MOBILE_BUILD) {
+                                copyArtifacts(
+                                    projectName: 'mobile_tests',
+                                    selector: specific(env.MOBILE_BUILD),
+                                    filter: 'build/allure-results/**',
+                                    target: 'allure/mobile'
+                                )
+                            }
+                        }
+                    }
+                }
+
+                stage('Merge results') {
+                    steps {
+                        sh '''
+                        mkdir -p merged-allure-results
+                        if [ -d allure ]; then
+                          find allure -type f \( -name "*.json" -o -name "*.txt" -o -name "*.csv" -o -name "*.xml" -o -name "*.png" \) -exec cp {} merged-allure-results/ \;
+                        fi
+                        ls -la merged-allure-results || true
+                        '''
+                    }
+                }
+
+                stage('Allure report') {
+                    steps {
+                        allure([
+                            results: [[path: 'merged-allure-results']]
+                        ])
+                    }
+                }
+            }
+        }
