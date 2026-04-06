@@ -75,7 +75,8 @@ pipeline {
                             projectName: 'ui_tests',
                             selector: specific(env.UI_BUILD),
                             filter: 'build/allure-results/**',
-                            target: 'allure/ui'
+                            target: 'allure/ui',
+                            optional: true
                         )
                     }
 
@@ -84,7 +85,8 @@ pipeline {
                             projectName: 'mobile_tests',
                             selector: specific(env.MOBILE_BUILD),
                             filter: 'build/allure-results/**',
-                            target: 'allure/mobile'
+                            target: 'allure/mobile',
+                            optional: true
                         )
                     }
                 }
@@ -107,12 +109,34 @@ pipeline {
         }
 
         stage('Publish Allure report') {
-            steps {
-                allure([
-                    includeProperties: false,
-                    results: [[path: 'merged-allure-results']]
-                ])
+            when {
+                expression { fileExists('merged-allure-results') }
             }
+            steps {
+                script {
+                    def count = sh(
+                        script: "find merged-allure-results -type f | wc -l",
+                        returnStdout: true
+                    ).trim()
+
+                    echo "Merged Allure files count: ${count}"
+
+                    if (count != '0') {
+                        allure([
+                            includeProperties: false,
+                            results: [[path: 'merged-allure-results']]
+                        ])
+                    } else {
+                        echo 'No merged allure-results found, skipping Allure publish'
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            archiveArtifacts artifacts: 'allure/**, merged-allure-results/**', allowEmptyArchive: true
         }
     }
 }
