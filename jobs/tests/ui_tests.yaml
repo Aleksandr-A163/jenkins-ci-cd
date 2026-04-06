@@ -1,0 +1,38 @@
+---
+- job:
+    name: ui_tests
+    description: "UI tests pipeline for Playwright Gradle project"
+    project-type: pipeline
+    concurrent: true
+    parameters:
+      - string:
+          name: BRANCH
+          default: main
+          description: "Git branch name"
+      - choice:
+          name: BROWSER
+          choices:
+            - chromium
+            - firefox
+            - webkit
+          description: "Browser for UI tests"
+      - bool:
+          name: HEADLESS
+          default: true
+          description: "Run tests in headless mode"
+      - string:
+          name: BASE_URL
+          default: https://otus.ru/lessons/clickhouse/
+          description: "Base URL for TeachersUiTest"
+      - string:
+          name: SITE_URL
+          default: https://otus.ru
+          description: "Site URL for CatalogCoursesFilterTest and SubscriptionTest"
+    pipeline-scm:
+      scm:
+        - git:
+            url: https://github.com/Aleksandr-A163/playwright_otus.git
+            credentials-id: github
+            branches:
+              - $BRANCH
+      script-path: pipeline/ui-test-pipeline.groovy
