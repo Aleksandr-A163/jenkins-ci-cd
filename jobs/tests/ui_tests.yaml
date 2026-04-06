@@ -35,4 +35,4 @@
             credentials-id: github
             branches:
               - $BRANCH
-      script-path: pipeline/ui-test-pipeline.groovy
+      script-path: pipeline/ui-tests-pipeline.groovy
